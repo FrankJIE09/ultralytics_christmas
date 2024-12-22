@@ -41,28 +41,30 @@ def run_server():
 
                         # 如果接收到的消息是 'red' 或 'green'，则调用 grasp_gift
                         if message == 'gift':
-                            time.sleep(0.1)
-                            # 执行任务
-                            controller.pre_execute()
-
-                            conn.sendall("start".encode('utf-8'))
-                            print("Sent: start")
-
-                            controller.execute()
-
-                            time.sleep(0.1)
-                            # 发送执行完成信号
-                            conn.sendall("ready".encode('utf-8'))
-                            print("Sent: ready")
-
-                            # 等待客户端回复 'done' 信号，确认可以继续执行 release_object
-                            done_signal = conn.recv(1024).decode('utf-8')
-                            if done_signal == 'yes':
-                                # 执行释放操作
+                            get_gift = False
+                            while not get_gift:
                                 time.sleep(0.1)
-                                controller.release_object()
-                                conn.sendall("end".encode('utf-8'))
-                                print("Sent: end")
+                                # 执行任务
+                                controller.pre_execute()
+                                controller.execute()
+
+                                time.sleep(0.1)
+                                # 发送执行完成信号
+                                conn.sendall("ready".encode('utf-8'))
+                                print("Sent: ready")
+
+                                # 等待客户端回复 'done' 信号，确认可以继续执行 release_object
+                                done_signal = conn.recv(1024).decode('utf-8')
+                                if done_signal == 'yes':
+                                    get_gift = True
+                                    # 执行释放操作
+                                    time.sleep(0.1)
+                                    controller.release_object()
+                                    conn.sendall("end".encode('utf-8'))
+                                    print("Sent: end")
+                                elif done_signal == 'no_gift':
+                                    controller.release_object()
+                                    get_gift = False
                         if message == 'circle':
                             # 执行任务
                             time.sleep(0.1)
@@ -109,9 +111,8 @@ def run_server():
                             # 执行任务
                             story_thread = threading.Thread(target=controller.story)
                             story_thread.start()
-                            time.sleep(0.1)
                             # 发送执行完成信号
-                        if message == 'talk_end':
+                        if message == 'talk_end' or message == 'talktalk_end':
                             # 执行任务
                             if story_thread and story_thread.is_alive():
                                 controller.stop_story()  # 通知线程停止

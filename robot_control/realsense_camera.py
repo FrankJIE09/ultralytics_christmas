@@ -5,6 +5,7 @@ from pyrealsense2 import pyrealsense2 as rs  # 导入Intel RealSense库，用于
 import yaml
 import json
 
+
 def adjust_exposure_based_on_brightness(camera, target_brightness=128):
     """
     根据图像亮度自动调节曝光值。
@@ -22,9 +23,9 @@ def adjust_exposure_based_on_brightness(camera, target_brightness=128):
 
         # 根据人眼感知计算亮度（加权平均法）
         current_brightness = (
-            0.299 * color_image[:, :, 2] +  # Red 通道
-            0.587 * color_image[:, :, 1] +  # Green 通道
-            0.114 * color_image[:, :, 0]    # Blue 通道
+                0.299 * color_image[:, :, 2] +  # Red 通道
+                0.587 * color_image[:, :, 1] +  # Green 通道
+                0.114 * color_image[:, :, 0]  # Blue 通道
         ).mean()
 
         print(f"当前亮度: {current_brightness}")
@@ -42,6 +43,8 @@ def adjust_exposure_based_on_brightness(camera, target_brightness=128):
         else:
             print("亮度已调整至合理范围，无需进一步调整。")
             break
+
+
 class RealSenseCamera:
     def __init__(self, config_extrinsic='./config/hand_eye_config.yaml',
                  ):
@@ -108,7 +111,7 @@ class RealSenseCamera:
         self.ppx = self.intrinsics.ppx
         self.ppy = self.intrinsics.ppy
         self.color_sensor = self._pipeline_profile.get_device().first_color_sensor()
-        adjust_exposure_based_on_brightness(self,target_brightness=200)
+        adjust_exposure_based_on_brightness(self, target_brightness=158)
 
     def load_extrinsic(self, config_path):
         """从配置文件中加载外参."""

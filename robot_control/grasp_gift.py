@@ -65,24 +65,6 @@ class RobotController:
             positions = yaml.safe_load(file)
         return positions[tag]
 
-    def move_robot(self, target_pose):
-        """
-        使用给定的目标姿态 (target_pose) 移动机器人。
-
-        参数:
-        target_pose (list): 包含目标位置和姿态的列表或元组，例如 [x, y, z, roll, pitch, yaw]
-
-        说明:
-        该方法将机器人移动到目标姿态。目标姿态包括目标位置的 XYZ 坐标和 RPY 角度。
-        """
-        print(f"Moving robot to target pose: {target_pose}")
-
-        # 调用机器人的 API 移动机器人
-        self.client.move_robot(target_pose=target_pose)
-
-        # 等待机器人运动完成
-        # time.sleep(2)  # 可根据需要调整等待时间
-
     def calculate_position(self, detection, depth_frame, center_depth=333):
         # 计算检测到的目标物体的3D位置的函数。
 
@@ -270,11 +252,11 @@ class RobotController:
 
         # 移动到物体上方100mm
         print("Moving above the object...")
-        self.move_robot(pre_grasp_pose)
+        self.client.move_robot(pre_grasp_pose)
 
         # 向下移动到抓取高度
         print("Moving down to grab the object...")
-        self.move_robot(grasp_pose)
+        self.client.move_robot(grasp_pose)
 
         # 控制手爪抓取物体
         print("Closing gripper to grab the object...")
@@ -284,7 +266,10 @@ class RobotController:
 
         # 抓取完成后升高100mm
         print("Raising after grab...")
-        self.move_robot(after_grasp_pose)
+        ret = self.client.move_robot(after_grasp_pose)
+        while ret != 0:
+            after_grasp_pose[2] = after_grasp_pose[2] - 20
+            ret = self.client.move_robot(after_grasp_pose)
 
     def release_object(self):
         """释放物体"""
@@ -294,7 +279,7 @@ class RobotController:
     def pre_execute(self):
         if self.current_pose[2] < 450:
             print(f"Current height {self.current_pose[2]} is less than 500. Moving to 500...")
-            self.move_robot(target_pose=[self.current_pose[0], self.current_pose[1], 450, 0, 0, 0])
+            self.client.move_robot(target_pose=[self.current_pose[0], self.current_pose[1], 450, 0, 0, 0])
         gift_joint_init = self.joint['gift_joint_init']
         self.client.moveJ_robot(target_joint=gift_joint_init)
 
@@ -399,7 +384,7 @@ class RobotController:
 
     def greet(self):
         # greet_point = self.positions["greet"]
-        # self.move_robot(greet_point)
+        # self.client.move_robot(greet_point)
         greet_joint_init = self.joint["greet_joint_init"]
         greet_joint_left = self.joint["greet_joint_left"]
         greet_joint_right = self.joint["greet_joint_right"]
@@ -407,7 +392,7 @@ class RobotController:
         self.client.moveJ_robot(greet_joint_right)
         self.client.moveJ_robot(greet_joint_init)
 
-        # self.move_robot(greet_point)
+        # self.client.move_robot(greet_point)
 
     def pre_story(self):
         greet_point = self.joint["greet_joint_init"]
@@ -453,4 +438,3 @@ if __name__ == "__main__":
     main()
     # greet_()
 
-    # greet_()

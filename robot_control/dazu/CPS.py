@@ -2743,7 +2743,7 @@ class CPSClient(object):
     *	@param return: 错误码
     '''
 
-    def moveJ_robot(self, target_joint, boxID=0, rbtID=0, speed=20, acceleration=50, radius=0, isJoint=1):
+    def moveJ_robot(self, target_joint, boxID=0, rbtID=0, speed=30, acceleration=50, radius=0, isJoint=1):
         """
         通过关节插补方式移动机器人到目标位姿。
 
@@ -2831,7 +2831,7 @@ class CPSClient(object):
     *	@param return: 错误码
     '''
 
-    def move_robot(self, target_pose, boxID=0, rbtID=0, speed=50, acceleration=500, radius=0):
+    def move_robot(self, target_pose, boxID=0, rbtID=0, speed=100, acceleration=500, radius=0):
         ucs = "Base"  # 坐标系
         ret = self.HRIF_MoveL(boxID, rbtID, points=target_pose, RawACSpoints=target_pose, tcp="TCP", ucs=ucs,
                               speed=speed, Acc=acceleration, radius=radius, isSeek=0, bit=0, state=1, cmdID=1)
@@ -2848,6 +2848,7 @@ class CPSClient(object):
                 time.sleep(0.5)  # 等待一段时间再次检查
         else:
             print(f"机器人运动失败，错误码: {ret}")
+        return ret
 
     def HRIF_MoveL(self, boxID, rbtID, points, RawACSpoints, tcp, ucs, speed, Acc, radius, isSeek, bit, state, cmdID):
         result = []

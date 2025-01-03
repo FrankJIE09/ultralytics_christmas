@@ -100,7 +100,7 @@ def process_obb_txt_files(input_folder, img_width, img_height):
 
 
 # 示例：指定输入文件夹、图像尺寸
-input_folder = '/home/frank/Frank/code/yolo11/datasets/valve_train/labels/train'  # 输入文件夹路径
+input_folder = '../belt_images'  # 输入文件夹路径
 img_width = 1280  # 假设图像宽度
 img_height = 720  # 假设图像高度
 

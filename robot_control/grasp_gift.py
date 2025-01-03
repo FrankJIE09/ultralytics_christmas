@@ -282,6 +282,7 @@ class RobotController:
             self.client.move_robot(target_pose=[self.current_pose[0], self.current_pose[1], 450, 0, 0, 0])
         gift_joint_init = self.joint['gift_joint_init']
         self.client.moveJ_robot(target_joint=gift_joint_init)
+        self.camera.adjust_exposure_based_on_brightness(target_brightness=158)
 
     def execute(self):
         """执行完整的任务流程"""
@@ -415,6 +416,8 @@ def main():
     controller.pre_execute()
     # 执行任务
     controller.execute()
+    # time.sleep(1)
+    # controller.release_object()
 
 
 def story_():

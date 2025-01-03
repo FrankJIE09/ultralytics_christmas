@@ -6,43 +6,6 @@ import yaml
 import json
 
 
-def adjust_exposure_based_on_brightness(camera, target_brightness=128):
-    """
-    根据图像亮度自动调节曝光值。
-    参数:
-    - camera: RealSenseCamera 对象。
-    - target_brightness: 目标亮度值 (0-255)。
-    """
-    # 设置调整步长和曝光范围
-    exposure_step = 50
-    min_exposure = 50
-    max_exposure = 10000
-
-    while True:
-        color_image, _, _ = camera.get_frames()  # 获取一帧图像
-
-        # 根据人眼感知计算亮度（加权平均法）
-        current_brightness = (
-                0.299 * color_image[:, :, 2] +  # Red 通道
-                0.587 * color_image[:, :, 1] +  # Green 通道
-                0.114 * color_image[:, :, 0]  # Blue 通道
-        ).mean()
-
-        print(f"当前亮度: {current_brightness}")
-
-        # 根据亮度调整曝光值
-        current_exposure = camera.color_sensor.get_option(rs.option.exposure)
-        if current_brightness < target_brightness - 10:
-            new_exposure = min(current_exposure + exposure_step, max_exposure)
-            camera.set_exposure(new_exposure)
-            print(f"亮度过低，增加曝光值到: {new_exposure}")
-        elif current_brightness > target_brightness + 10:
-            new_exposure = max(current_exposure - exposure_step, min_exposure)
-            camera.set_exposure(new_exposure)
-            print(f"亮度过高，减少曝光值到: {new_exposure}")
-        else:
-            print("亮度已调整至合理范围，无需进一步调整。")
-            break
 
 
 class RealSenseCamera:
@@ -111,7 +74,44 @@ class RealSenseCamera:
         self.ppx = self.intrinsics.ppx
         self.ppy = self.intrinsics.ppy
         self.color_sensor = self._pipeline_profile.get_device().first_color_sensor()
-        adjust_exposure_based_on_brightness(self, target_brightness=158)
+
+    def adjust_exposure_based_on_brightness(self, target_brightness=128):
+        """
+        根据图像亮度自动调节曝光值。
+        参数:
+        - camera: RealSenseCamera 对象。
+        - target_brightness: 目标亮度值 (0-255)。
+        """
+        # 设置调整步长和曝光范围
+        exposure_step = 50
+        min_exposure = 50
+        max_exposure = 10000
+
+        while True:
+            color_image, _, _ = self.get_frames()  # 获取一帧图像
+
+            # 根据人眼感知计算亮度（加权平均法）
+            current_brightness = (
+                    0.299 * color_image[:, :, 2] +  # Red 通道
+                    0.587 * color_image[:, :, 1] +  # Green 通道
+                    0.114 * color_image[:, :, 0]  # Blue 通道
+            ).mean()
+
+            print(f"当前亮度: {current_brightness}")
+
+            # 根据亮度调整曝光值
+            current_exposure = self.color_sensor.get_option(rs.option.exposure)
+            if current_brightness < target_brightness - 10:
+                new_exposure = min(current_exposure + exposure_step, max_exposure)
+                self.set_exposure(new_exposure)
+                print(f"亮度过低，增加曝光值到: {new_exposure}")
+            elif current_brightness > target_brightness + 10:
+                new_exposure = max(current_exposure - exposure_step, min_exposure)
+                self.set_exposure(new_exposure)
+                print(f"亮度过高，减少曝光值到: {new_exposure}")
+            else:
+                print("亮度已调整至合理范围，无需进一步调整。")
+                break
 
     def load_extrinsic(self, config_path):
         """从配置文件中加载外参."""

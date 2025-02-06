@@ -1,0 +1,8 @@
+path: /home/frank/Frank/code/ultralytics_christmas/christmas_dataset/plastic_bottle_dataset  # dataset root dir
+train: images/train
+val: images/val
+nc: 1
+names:
+  0: bottle
+
+

@@ -32,12 +32,12 @@ print("Runs directory:", settings["runs_dir"])
 
 train = True
 
-dictionary = '/home/frank/Frank/code/ultralytics_christmas/christmas_dataset/belt_dataset/'
+dictionary = '/home/frank/Frank/code/ultralytics_christmas/christmas_dataset/bottle_head_dataset/'
 if train:
     # 初始化 yolov8m-obb 模型
-    model = YOLO('yolov8m-obb', task="train")  # 确保模型路径正确
+    model = YOLO('yolov8m', task="train")  # 确保模型路径正确
     # 训练模型
-    model.train(data=dictionary + 'data.yaml', epochs=100, batch=16, imgsz=640)  # 确保数据路径和参数正确
+    model.train(data=dictionary + 'data.yaml', epochs=30, batch=16, imgsz=640)  # 确保数据路径和参数正确
 
     # 进行预测以验证训练效果
     results = model.predict(source=dictionary+'images/test')

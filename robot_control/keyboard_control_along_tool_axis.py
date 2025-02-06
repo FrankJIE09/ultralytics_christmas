@@ -67,9 +67,8 @@ def update_pose(current_pose, x, y, z, roll, pitch, yaw):
 
 
 class RobotController:
-    def __init__(self, box_id=0, rbt_id=0, position_file='./config/position.yaml',
-                 calibration_file='./config/hand_eye_config.yaml',
-                 step_size=0.2, rotation_step_size=0.1):
+    def __init__(self, box_id=0, rbt_id=0,
+                 step_size=10, rotation_step_size=0.1 * 10):
         """
         初始化机器人控制器
         :param step_size: 控制机器人每次移动的步进量（默认值为1）
@@ -77,8 +76,7 @@ class RobotController:
         """
         self.box_id = box_id
         self.rbt_id = rbt_id
-        self.position_file = position_file
-        self.calibration_file = calibration_file
+
         self.client = CPSClient()
         self.step_size = step_size  # 步进量
         self.rotation_step_size = rotation_step_size  # 旋转步进量
@@ -90,14 +88,6 @@ class RobotController:
         # 获取当前位置
         self.current_pose = self.client.read_pos()
         print(f"Initial Current Pose: {self.current_pose}")
-
-        # 读取目标位置
-        self.positions = self.read_position()
-
-    def read_position(self, tag='positions'):
-        with open(self.position_file, 'r') as file:
-            positions = yaml.safe_load(file)
-        return positions[tag]
 
     def move_arm(self, pose, dServoTime):
         """
@@ -118,7 +108,7 @@ class RobotController:
         # 创建窗口
         cv2.namedWindow('Robot Control')
         dServoTime = 0.025
-        dLookaheadTime = 0.05
+        dLookaheadTime = 1
 
         while True:
             # 显示图像（简单的文本提示）
@@ -173,17 +163,10 @@ class RobotController:
                 rz -= self.rotation_step_size  # 绕Z轴逆时针旋转（减少Rz）
 
             self.current_pose = self.client.read_pos()
-            pose_x, pose_y, pose_z = self.current_pose[0], self.current_pose[1], self.current_pose[2]
             roll, pitch, yaw = self.current_pose[3], self.current_pose[4], self.current_pose[5]
-            transformation_matrix = rpy_to_transformation_matrix(pose_x, pose_y, pose_z, roll, pitch, yaw)
-
-            pose_x, pose_y, pose_z, roll, pitch, yaw = transformation_matrix_to_rpy(
-                transformation_matrix @ rpy_to_transformation_matrix(0, 0, 200, 0, 0, 0))
-
             base2end_rpy_matrix = R.from_euler('xyz', [roll, pitch, yaw], degrees=True).as_matrix()
             transformation_matrix_diff_rpy = R.from_euler('xyz', [rx, ry, rz], degrees=True).as_matrix()
             xyz_diff = np.array([x, y, z]) @ np.linalg.inv(base2end_rpy_matrix)
-
             rpy = R.from_matrix(base2end_rpy_matrix @ transformation_matrix_diff_rpy).as_euler("xyz", degrees=True)
             pose = np.array([self.current_pose[0] + xyz_diff[0],
                              self.current_pose[1] + xyz_diff[1],
@@ -198,7 +181,10 @@ class RobotController:
             self.current_pose = self.client.read_pos()
             x, y, z = self.current_pose[0], self.current_pose[1], self.current_pose[2]
             rx, ry, rz = self.current_pose[3], self.current_pose[4], self.current_pose[5]
-
+            ###############################################################
+            self.current_pose = self.client.read_pos()
+            rpy_to_transformation_matrix(self.current_pose[0], self.current_pose[1], self.current_pose[2],
+                                         self.current_pose[3], self.current_pose[4], self.current_pose[5])
             # 打印当前坐标
             print(f"Current Pose: X={x}, Y={y}, Z={z}, Rx={rx}, Ry={ry}, Rz={rz}")
 
